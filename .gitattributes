@@ -1,0 +1,2 @@
+# PDF byte offsets must not change during checkout on Windows.
+*.pdf binary

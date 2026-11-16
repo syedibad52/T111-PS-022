@@ -31,8 +31,8 @@ mvn -version
 ### 2. Download the project
 
 ```sh
-git clone https://github.com/syedibad52/credit-bureau-simulator.git
-cd credit-bureau-simulator
+git clone https://github.com/syedibad52/T111-PS-022.git
+cd T111-PS-022
 ```
 
 Already downloaded it? Open a terminal in the folder containing `pom.xml`.
@@ -73,7 +73,7 @@ mvn test
 
 The checked-in suite has **39 tests in 13 classes**. The local verification on **16 November 2026** passed all 39, with no failures, errors, or skipped tests.
 
-GitHub Actions runs Maven verification on pushes and pull requests. See [Actions](https://github.com/syedibad52/credit-bureau-simulator/actions) for current results. Detailed reports are generated in `target/surefire-reports/` and uploaded as a CI artifact.
+GitHub Actions runs Maven verification on pushes and pull requests. See [Actions](https://github.com/syedibad52/T111-PS-022/actions) for current results. Detailed reports are generated in `target/surefire-reports/` and uploaded as a CI artifact.
 
 The [testing guide](docs/Testing.md) explains individual test commands and coverage limits.
 
