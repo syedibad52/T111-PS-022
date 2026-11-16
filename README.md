@@ -1,158 +1,111 @@
 # Credit Bureau Score Simulator
 
-A Java 17 project that turns raw credit-bureau-style CSV data into an explainable credit score and an interactive report.
+A Java 17 application that turns sample credit records into an explainable score. Select a consumer and a date to see their score, the reasons behind it, and their repayment history.
 
-It is designed as a portfolio project: a recruiter can see how data enters the system, how the score is calculated, which rule affected it, and how the result reaches the browser.
+This is an educational simulator using sample data, not a real lending-decision service.
 
-## What this project does
+## Try it online
 
-The simulator reads consumer accounts, enquiries, and account events from CSV files. For a selected consumer and date, it:
+- [Live website](https://credit-bureau-simulator-1.onrender.com/)
+- [Watch the 5-minute demo](https://drive.google.com/file/d/1SN3hPIqT2C11b2c6BdzIoXf50E6bnkyY/view?usp=drivesdk)
 
-1. ignores information that was not known on that date;
-2. merges duplicate account submissions from different lenders;
-3. builds a 36-month repayment history;
-4. calculates five score factors;
-5. applies risk caps such as a recent serious delinquency; and
-6. shows the final result, explanations, accounts, and applied rules in the web dashboard.
+## Project deliverables
 
-The score range is 300 to 900. This is a deterministic simulator, not a real credit-bureau product or production credit decisioning system.
+- **README with run steps:** see below.
+- **Design document:** [PDF](docs/DesignDocument.pdf) and [Markdown](docs/DesignDocument.md).
+- **Full automated test suite:** [test source](src/test/java/com/creditbureau/simulator), [fixtures](test-data), and [testing guide](docs/Testing.md).
+- **Decision log:** [design choices and trade-offs](docs/DecisionLog.md).
+- **Demo video:** [5-minute walkthrough](https://drive.google.com/file/d/1SN3hPIqT2C11b2c6BdzIoXf50E6bnkyY/view?usp=drivesdk).
 
-## Quick start
+## Run on your computer
 
-### Prerequisites
+### 1. Check the requirements
 
-- Java 17 or later
-- Maven 3.8 or later
+Install Git, JDK 17 or later, and Maven 3.8 or later. Check Java and Maven:
 
-### Run the web dashboard
+```sh
+java -version
+mvn -version
+```
 
-```bash
+### 2. Download the project
+
+```sh
+git clone https://github.com/syedibad52/credit-bureau-simulator.git
 cd credit-bureau-simulator
-mvn clean package
+```
+
+Already downloaded it? Open a terminal in the folder containing `pom.xml`.
+
+### 3. Build and test
+
+```sh
+mvn clean verify
+```
+
+This runs all automated tests and creates `target/credit-bureau-simulator-1.0.0.jar`.
+
+### 4. Start the website
+
+```sh
 java -jar target/credit-bureau-simulator-1.0.0.jar serve --data ./sample-data
 ```
 
-Open [http://localhost:8080](http://localhost:8080). Select a consumer, choose an as-of date, and press **Evaluate Score**.
+Open [http://localhost:8080](http://localhost:8080). Keep the terminal running while using the website. Press **Ctrl+C** in that terminal to stop it.
 
-### Run the tests
+Run from the project folder so the server can find `index.html` and `sample-data`. The default port is 8080; the `PORT` environment variable overrides it.
 
-```bash
+### 5. Try three examples
+
+Set **As-Of** to **2026-10-31**, select a consumer, and click **Evaluate Score**:
+
+- **CON-004:** score **900**, showing the maximum-score limit.
+- **CON-003:** score **650**, showing a risk cap for a recent serious late payment.
+- **CON-010:** score **NA**, showing insufficient credit history.
+
+Explore the factor cards, consumer profile, 36-month repayment grid, and applied business rules.
+
+## Run the full test suite
+
+```sh
 mvn test
 ```
 
-### Generate a report from the command line
+The checked-in suite has **39 tests in 13 classes**. The local verification on **16 November 2026** passed all 39, with no failures, errors, or skipped tests.
 
-```bash
-java -jar target/credit-bureau-simulator-1.0.0.jar generate-report \
-  --data ./sample-data \
-  --consumer CON-004 \
-  --as-of 2026-10-31
-```
+GitHub Actions runs Maven verification on pushes and pull requests. See [Actions](https://github.com/syedibad52/credit-bureau-simulator/actions) for current results. Detailed reports are generated in `target/surefire-reports/` and uploaded as a CI artifact.
+
+The [testing guide](docs/Testing.md) explains individual test commands and coverage limits.
 
 ## How it works
 
-```text
-CSV files
-  │
-  ├── validation and ingestion
-  ├── as-of-date filtering and account merging
-  ├── score factors and risk overrides
-  ├── report JSON or CLI report
-  └── interactive browser dashboard
-```
+1. Read credit accounts, enquiries, and events from CSV files.
+2. Keep records available on the selected date.
+3. Merge duplicate submissions for the same account.
+4. Build a 36-month repayment history.
+5. Calculate payment history, utilisation, credit age, credit mix, and enquiry contributions.
+6. Apply score limits and risk overrides.
+7. Return the score, explanations, accounts, and rule IDs.
 
-The scoring engine exposes the calculation instead of returning only a number. The dashboard displays the score, factor contributions, repayment grid, account profile, overrides, and business-rule IDs.
+Eligible profiles start at 300. Positive factors add points and hard enquiries can subtract points. Scores are limited to 300-900, with lower caps for serious risk events. Insufficient history returns NA.
 
-## Score components
+## Technology and folders
 
-| Component | Maximum contribution | In plain English |
-| --- | ---: | --- |
-| Base score | 300 | Every eligible profile starts here. |
-| Payment history | 300 | Late repayments reduce the score. Recent issues count more. |
-| Credit utilisation | 200 | Using a smaller part of revolving credit is better. |
-| Credit age | 100 | Older eligible accounts improve the score. |
-| Credit mix | 100 | A balanced secured and unsecured portfolio scores higher. |
-| Enquiries | -100 | Recent hard enquiries reduce the score. |
-| Risk overrides | caps the result | Serious events can cap the final score at 650, 600, or 550. |
+- `index.html`: HTML, CSS, and JavaScript dashboard.
+- `src/main/java/`: Java backend, HTTP API, CLI, and scoring logic.
+- `src/test/java/`: JUnit 5 unit and integration tests.
+- `sample-data/`: dashboard examples.
+- `test-data/`: focused integration-test fixtures.
+- `docs/`: design, decisions, business rules, and testing.
+- `.github/workflows/tests.yml`: automated test workflow.
 
-See [BusinessRules.md](docs/BusinessRules.md) for the complete rule register.
+The Java service can serve both the dashboard and API on Render. An optional Vercel frontend proxy is also included. See the [deployment guide](docs/Deployment.md).
 
-## Repository guide
+## Troubleshooting
 
-```text
-credit-bureau-simulator/
-├── index.html                  Frontend dashboard
-├── api/                         Vercel functions that proxy API calls
-├── lib/                         Shared code for Vercel functions
-├── Dockerfile                   Build instructions for the Java API container
-├── render.yaml                  Render service definition
-├── vercel.json                  Vercel function configuration
-├── sample-data/                Demo input CSV files
-├── test-data/                  Focused data used by tests
-├── output/                     Generated evaluation reports
-├── src/
-│   ├── main/java/.../
-│   │   ├── web/                HTTP server and JSON API
-│   │   ├── cli/                Command-line entry points
-│   │   ├── ingestion/          CSV parsing and validation
-│   │   ├── processing/         Filtering, merging, profile and DPD grid
-│   │   ├── scoring/            Score calculators and overrides
-│   │   ├── reporting/          CLI report formatters
-│   │   ├── domain/             Data records and enums
-│   │   └── persistence/        In-memory data store abstraction
-│   └── test/java/.../          Unit and integration tests
-└── docs/                       Architecture, rules, data, tests, and demos
-```
+- **Java or Maven is not recognized:** install it, add its bin folder to PATH, and reopen the terminal.
+- **Port 8080 is busy:** stop the process using that port, or set `PORT` to a free port.
+- **Missing data or wrong page:** start the server from the folder containing `pom.xml`, `index.html`, and `sample-data`.
+- **Score differs from the demo:** check the consumer ID and as-of date.
 
-## Frontend and backend
-
-| Part | Location | Responsibility |
-| --- | --- | --- |
-| Frontend | `index.html` | Lets a user select a scenario and displays the report returned by the API. |
-| Web API | `src/main/java/.../web/WebServer.java` | Serves the dashboard and `/api/report`, `/api/consumers`, and `/api/history`. |
-| Backend logic | `src/main/java/.../ingestion`, `processing`, `scoring` | Converts CSV records into an explainable score. |
-| Data | `sample-data/` | Supplies demo consumers, accounts, enquiries, and events. |
-| Tests | `src/test/java/` | Verifies calculations, boundaries, determinism, and end-to-end workflow. |
-
-For a deeper explanation, read [Frontend guide](docs/Frontend.md) and [Backend guide](docs/Backend.md).
-
-## Recruiter walkthrough
-
-1. Start with the browser dashboard and select `CON-004` to show a clean 30% utilisation scenario.
-2. Open the factor strip to explain where the score came from.
-3. Show the repayment grid and applied-rule register to demonstrate traceability.
-4. Point to `ScoringEngine` as the orchestrator and to individual calculators for isolated business logic.
-5. Show the tests to demonstrate boundary coverage and deterministic results.
-
-Use [PresentationGuide.md](docs/PresentationGuide.md) for a concise interview script.
-
-## Deploy it live
-
-The project is prepared for a split deployment:
-
-- **Render** runs the Java scoring API and reads the sample CSV data.
-- **Vercel** hosts the dashboard and proxies browser API requests to Render.
-
-Follow [Deployment.md](docs/Deployment.md) for the exact steps. The only value you need to supply is the Render service URL as Vercel's `BACKEND_URL` environment variable.
-
-## Documentation
-
-- [Documentation index](docs/README.md)
-- [Frontend guide](docs/Frontend.md)
-- [Backend guide](docs/Backend.md)
-- [Architecture](docs/Architecture.md)
-- [Business rules](docs/BusinessRules.md)
-- [Data dictionary](docs/DataDictionary.md)
-- [Test guide](docs/TestCases.md)
-- [Presentation guide](docs/PresentationGuide.md)
-- [Deployment guide](docs/Deployment.md)
-- [Viva preparation](docs/VivaPreparation.md)
-
-## Technology
-
-- Java 17
-- Maven
-- JUnit 5
-- JDK built-in `HttpServer`
-- HTML, CSS, and vanilla JavaScript
-- SLF4J and Logback
+See the [documentation index](docs/README.md) for more detail.

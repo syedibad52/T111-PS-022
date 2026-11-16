@@ -2,6 +2,12 @@
 
 This folder is arranged by the question a reader wants answered.
 
+Start with the [design PDF](DesignDocument.pdf), [plain-language design](DesignDocument.md),
+[decision log](DecisionLog.md), and [testing guide](Testing.md).
+
+To rebuild the PDF, install Python and ReportLab, then run
+`python docs/build_design_pdf.py` from the repository root.
+
 | If you want to know… | Read this |
 | --- | --- |
 | What the project does and how to run it | [../README.md](../README.md) |

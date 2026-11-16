@@ -1,6 +1,6 @@
 # Automated Test Suite & Traceability Matrix (PS-022)
 
-The Credit Bureau Score Simulation Engine features 39 automated JUnit 5 tests covering all 48 business rules, boundary conditions, edge cases, integration workflows, and determinism requirements.
+The Credit Bureau Score Simulation Engine includes 39 automated JUnit 5 tests for selected business rules, boundary conditions, integration workflows, and determinism. This map does not establish exhaustive coverage of all 48 rules. See [Testing.md](Testing.md) for run commands, the verified result, and coverage limits.
 
 ---
 
